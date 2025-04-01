@@ -1,0 +1,205 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Admin {
+  id        String   @id @default(cuid())
+  name      String   @default("Administrator")
+  username  String   @unique
+  password  String
+  role      String   @default("Admin")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model JobApplicant {
+  id                   String  @id @default(cuid())
+  name                 String
+  email                String  @unique
+  age                  Int
+  sex                  String
+  address              String
+  contactNumber        String
+  profileImage         String?
+  totalYearExperience  String
+  highestRoleAchieved  String
+  fieldOfExpertise     String
+  awards               String?
+  companyName          String
+  jobPosition          String
+  yearsWorkedInCompany String
+  certificate          String?
+  logisticsCompany     String
+  logisticsYearsWorked String
+  degreeStatus         String
+  yearGraduated        String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  jobApplication         JobApplication[]
+  applicantAccount       ApplicantAccount[]
+  applicantScore         ApplicantScore[]
+  interviewSchedule      InterviewSchedule[]
+  applicantAnswer        ApplicantAnswer[]
+  applicantTraining      ApplicantTraining[]
+  applicantTrainingScore ApplicantTrainingScore[]
+  watchedVideo           WatchedVideo[]
+}
+
+model ApplicantAccount {
+  id            String   @id @default(cuid())
+  accountNumber String   @unique
+  password      String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  jobApplicantId String
+  jobApplicant   JobApplicant   @relation(fields: [jobApplicantId], references: [id], onDelete: Cascade)
+  notification   Notification[]
+}
+
+model JobApplication {
+  id              String       @id @default(cuid())
+  jobApplicantId  String
+  jobApplicant    JobApplicant @relation(fields: [jobApplicantId], references: [id], onDelete: Cascade)
+  positionApplied String
+  applicationDate DateTime
+  status          String       @default("Pending")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ApplicantScore {
+  id             String       @id @default(cuid())
+  jobApplicantId String
+  jobApplicant   JobApplicant @relation(fields: [jobApplicantId], references: [id], onDelete: Cascade)
+  score          Int
+  status         String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model VideoTraining {
+  id           String         @id @default(cuid())
+  title        String
+  description  String
+  videoUrl     String
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  watchedVideo WatchedVideo[]
+}
+
+model WatchedVideo {
+  id              String        @id @default(cuid())
+  jobApplicantId  String
+  jobApplicant    JobApplicant  @relation(fields: [jobApplicantId], references: [id], onDelete: Cascade)
+  videoTrainingId String
+  videoTraining   VideoTraining @relation(fields: [videoTrainingId], references: [id], onDelete: Cascade)
+  status          String
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+}
+
+model InterviewSchedule {
+  id             String       @id @default(cuid())
+  jobApplicantId String
+  jobApplicant   JobApplicant @relation(fields: [jobApplicantId], references: [id], onDelete: Cascade)
+  interviewDate  DateTime
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model Notification {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  accountNumber    String
+  applicantAccount ApplicantAccount @relation(fields: [accountNumber], references: [accountNumber], onDelete: Cascade)
+}
+
+model Questionnaire {
+  id          String     @id @default(cuid())
+  title       String
+  description String
+  isPublished Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  question    Question[]
+}
+
+model Question {
+  id              String            @id @default(cuid())
+  position        Int
+  questionnaireId String
+  questionnaire   Questionnaire     @relation(fields: [questionnaireId], references: [id], onDelete: Cascade)
+  question        String
+  isPublished     Boolean           @default(false)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  applicantAnswer ApplicantAnswer[]
+}
+
+model ApplicantAnswer {
+  id             String       @id @default(cuid())
+  jobApplicantId String
+  jobApplicant   JobApplicant @relation(fields: [jobApplicantId], references: [id], onDelete: Cascade)
+  questionId     String
+  question       Question     @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  answer         String
+  reason         String?
+  status         String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model TrainingOnsite {
+  id                String              @id @default(cuid())
+  title             String
+  description       String
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  applicantTraining ApplicantTraining[]
+}
+
+model ApplicantTraining {
+  id               String         @id @default(cuid())
+  item             String
+  score            Int
+  jobApplicantId   String
+  jobApplicant     JobApplicant   @relation(fields: [jobApplicantId], references: [id], onDelete: Cascade)
+  trainingOnsiteId String
+  trainingOnsite   TrainingOnsite @relation(fields: [trainingOnsiteId], references: [id], onDelete: Cascade)
+  status           String
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+}
+
+model ApplicantTrainingScore {
+  id             String       @id @default(cuid())
+  jobApplicantId String
+  jobApplicant   JobApplicant @relation(fields: [jobApplicantId], references: [id], onDelete: Cascade)
+  totalScore     Float
+  status         String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model NewsAnnouncements {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  imageUrl    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
